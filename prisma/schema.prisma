@@ -37,6 +37,7 @@ model Card {
   deckId    String
   deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
   review    ReviewState?
+  reviewLogs ReviewLog[]
 }
 
 model ReviewState {
@@ -48,4 +49,15 @@ model ReviewState {
   repetitions  Int      @default(0)
   nextReviewAt DateTime @default(now())
   lastReviewAt DateTime?
+}
+
+model ReviewLog {
+  id           String   @id @default(cuid())
+  cardId       String
+  card         Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  grade        Int      // SM-2 quality 0-5
+  easeFactor   Float
+  intervalDays Int
+  repetitions  Int
+  reviewedAt   DateTime @default(now())
 }
