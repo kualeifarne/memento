@@ -17,9 +17,30 @@ export default async function ReviewPage() {
       prompt: true,
       answer: true,
       hint: true,
+      deckId: true,
     },
     orderBy: [{ review: { nextReviewAt: "asc" } }],
   });
+
+  const deckIds = [...new Set(cards.map((card) => card.deckId))];
+
+  const poolCards =
+    deckIds.length === 0
+      ? []
+      : await prisma.card.findMany({
+          where: { deckId: { in: deckIds } },
+          select: { deckId: true, answer: true },
+        });
+
+  const answerPool = poolCards.reduce<Record<string, string[]>>(
+    (pool, card) => {
+      const answers = pool[card.deckId] ?? [];
+      answers.push(card.answer);
+      pool[card.deckId] = answers;
+      return pool;
+    },
+    {},
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
@@ -46,7 +67,7 @@ export default async function ReviewPage() {
           </Link>
         </div>
       ) : (
-        <ReviewSession cards={cards} />
+        <ReviewSession cards={cards} answerPool={answerPool} />
       )}
     </main>
   );

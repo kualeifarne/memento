@@ -18,10 +18,12 @@ export type ReviewCard = {
   prompt: string;
   answer: string;
   hint: string | null;
+  deckId: string;
 };
 
 type ReviewSessionProps = {
   cards: ReviewCard[];
+  answerPool: Record<string, string[]>;
 };
 
 const RATINGS: { rating: Rating; label: string; variant?: "destructive" }[] = [
@@ -31,7 +33,7 @@ const RATINGS: { rating: Rating; label: string; variant?: "destructive" }[] = [
   { rating: "easy", label: "Easy" },
 ];
 
-export function ReviewSession({ cards }: ReviewSessionProps) {
+export function ReviewSession({ cards, answerPool: _answerPool }: ReviewSessionProps) {
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [isPending, startTransition] = useTransition();
