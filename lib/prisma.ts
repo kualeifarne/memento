@@ -9,8 +9,18 @@ const adapter = new PrismaBetterSqlite3({
   url: process.env.DATABASE_URL!,
 });
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter });
+function createPrismaClient() {
+  return new PrismaClient({ adapter });
+}
+
+const cachedPrisma = globalForPrisma.prisma;
+const prisma =
+  cachedPrisma && "reviewLog" in cachedPrisma
+    ? cachedPrisma
+    : createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
+
+export { prisma };
