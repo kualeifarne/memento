@@ -15,7 +15,7 @@ function createPrismaClient() {
 
 const cachedPrisma = globalForPrisma.prisma;
 const prisma =
-  cachedPrisma && "reviewLog" in cachedPrisma
+  cachedPrisma && "reviewLog" in cachedPrisma && "learnState" in cachedPrisma
     ? cachedPrisma
     : createPrismaClient();
 
