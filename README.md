@@ -48,10 +48,16 @@ On Windows, `better-sqlite3` may require [Visual Studio Build Tools](https://vis
 
 4. **Set up the database**
 
-   Apply migrations and generate the Prisma client:
+   Apply migrations (this also creates the local `dev.db` file):
 
    ```bash
    bun run db:migrate
+   ```
+
+   `bun install` generates the Prisma client automatically. If you ever see `Cannot find module '@/generated/prisma/client'`, run:
+
+   ```bash
+   bun run db:generate
    ```
 
    If you see `The datasource.url property is required`, your `.env` file is missing or not in the project root. Repeat step 3, then run the command again from the `memento` folder.
@@ -59,6 +65,8 @@ On Windows, `better-sqlite3` may require [Visual Studio Build Tools](https://vis
 5. **Populate the database**
 
    The seed file at `prisma/seed.ts` loads a **React Cert Prep** course with 64 flashcards across 10 decks (JavaScript, JSX, components, hooks, React Router, TypeScript, and more).
+
+   Run this **after** step 4:
 
    ```bash
    bun run db:seed
@@ -96,6 +104,7 @@ All progress (learn state, review schedules, and review history) is saved to the
 | `bun run start`           | Run the production build                   |
 | `bun run lint`            | Run ESLint                                 |
 | `bun run db:migrate`      | Apply schema changes during development    |
+| `bun run db:generate`     | Generate the Prisma client                 |
 | `bun run db:seed`         | Populate the database from `prisma/seed.ts` |
 | `bun run db:studio`       | Open a GUI to browse and edit the database |
 
