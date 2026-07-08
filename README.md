@@ -24,7 +24,19 @@ On Windows, `better-sqlite3` may require [Visual Studio Build Tools](https://vis
    ```
 3. **Configure environment variables**
 
-   Create a `.env` file in the project root:
+   Copy the example env file to `.env` in the project root:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   On Windows (PowerShell):
+
+   ```powershell
+   Copy-Item .env.example .env
+   ```
+
+   The `.env` file must contain:
 
    ```env
    DATABASE_URL="file:./dev.db"
@@ -32,13 +44,17 @@ On Windows, `better-sqlite3` may require [Visual Studio Build Tools](https://vis
 
    This tells Prisma to use a SQLite database file named `dev.db` in the project root. The file is created automatically when you run migrations.
 
+   > **Note:** `.env` is not committed to git. You must create it on each machine where you run the project.
+
 4. **Set up the database**
 
    Apply migrations and generate the Prisma client:
 
    ```bash
-   bunx prisma migrate dev
+   bun run db:migrate
    ```
+
+   If you see `The datasource.url property is required`, your `.env` file is missing or not in the project root. Repeat step 3, then run the command again from the `memento` folder.
 
 5. **Populate the database**
 
@@ -79,9 +95,9 @@ All progress (learn state, review schedules, and review history) is saved to the
 | `bun run build`           | Build for production                       |
 | `bun run start`           | Run the production build                   |
 | `bun run lint`            | Run ESLint                                 |
+| `bun run db:migrate`      | Apply schema changes during development    |
 | `bun run db:seed`         | Populate the database from `prisma/seed.ts` |
-| `bunx prisma migrate dev` | Apply schema changes during development    |
-| `bunx prisma studio`      | Open a GUI to browse and edit the database |
+| `bun run db:studio`       | Open a GUI to browse and edit the database |
 
 
 
