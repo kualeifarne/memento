@@ -27,9 +27,23 @@ export default async function Home() {
           <h1 className="text-2xl font-semibold tracking-tight">Memento</h1>
           <p className="text-sm text-muted-foreground">Your courses</p>
         </div>
-        <Link href="/courses/new" className={cn(buttonVariants())}>
-          New course
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/learn"
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            Learn
+          </Link>
+          <Link
+            href="/review"
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            Review
+          </Link>
+          <Link href="/courses/new" className={cn(buttonVariants())}>
+            New course
+          </Link>
+        </div>
       </div>
 
       <CourseList courses={courses} />
