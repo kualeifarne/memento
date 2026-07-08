@@ -1,55 +1,51 @@
 import Link from "next/link";
 
-import { LearnSession } from "@/components/learn-session";
 import { buttonVariants } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { LEARN_TARGET } from "@/lib/learn-progress";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 
 export default async function LearnPage() {
-  const cards = await prisma.card.findMany({
+  const courses = await prisma.course.findMany({
+    orderBy: { updatedAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      decks: { select: { id: true } },
+    },
+  });
+
+  const learnableByDeck = await prisma.card.groupBy({
+    by: ["deckId"],
     where: {
       OR: [{ learn: null }, { learn: { correctCount: { lt: LEARN_TARGET } } }],
     },
-    select: {
-      id: true,
-      prompt: true,
-      answer: true,
-      hint: true,
-      deckId: true,
-      learn: { select: { correctCount: true } },
-    },
-    orderBy: [{ deck: { order: "asc" } }, { order: "asc" }],
+    _count: { _all: true },
   });
 
-  const learnCards = cards.map((card) => ({
-    id: card.id,
-    prompt: card.prompt,
-    answer: card.answer,
-    hint: card.hint,
-    deckId: card.deckId,
-    correctCount: card.learn?.correctCount ?? 0,
-  }));
-
-  const deckIds = [...new Set(learnCards.map((card) => card.deckId))];
-
-  const poolCards =
-    deckIds.length === 0
-      ? []
-      : await prisma.card.findMany({
-          where: { deckId: { in: deckIds } },
-          select: { deckId: true, answer: true },
-        });
-
-  const answerPool = poolCards.reduce<Record<string, string[]>>(
-    (pool, card) => {
-      const answers = pool[card.deckId] ?? [];
-      answers.push(card.answer);
-      pool[card.deckId] = answers;
-      return pool;
-    },
-    {},
+  const countByDeck = new Map(
+    learnableByDeck.map((group) => [group.deckId, group._count._all]),
   );
+
+  const learnableCourses = courses
+    .map((course) => ({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      learnableCount: course.decks.reduce(
+        (sum, deck) => sum + (countByDeck.get(deck.id) ?? 0),
+        0,
+      ),
+    }))
+    .filter((course) => course.learnableCount > 0);
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-6 py-12">
@@ -62,11 +58,11 @@ export default async function LearnPage() {
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">Learn</h1>
         <p className="text-sm text-muted-foreground">
-          Practice cards until you reach {LEARN_TARGET} correct answers each
+          Choose a course to learn from
         </p>
       </div>
 
-      {learnCards.length === 0 ? (
+      {learnableCourses.length === 0 ? (
         <div className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
             Nothing to learn — all cards are ready for review.
@@ -79,7 +75,26 @@ export default async function LearnPage() {
           </Link>
         </div>
       ) : (
-        <LearnSession cards={learnCards} answerPool={answerPool} />
+        <ul className="grid gap-4 sm:grid-cols-2">
+          {learnableCourses.map((course) => (
+            <li key={course.id}>
+              <Link href={`/learn/${course.id}`} className="block">
+                <Card className="transition-colors hover:bg-muted/50">
+                  <CardHeader>
+                    <CardTitle>{course.title}</CardTitle>
+                    {course.description ? (
+                      <CardDescription>{course.description}</CardDescription>
+                    ) : null}
+                  </CardHeader>
+                  <CardContent className="text-sm text-muted-foreground">
+                    {course.learnableCount}{" "}
+                    {course.learnableCount === 1 ? "card" : "cards"} to learn
+                  </CardContent>
+                </Card>
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
     </main>
   );

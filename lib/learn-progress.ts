@@ -9,6 +9,8 @@ import type { Rating } from "@/lib/spaced-repetition";
 
 export const LEARN_TARGET = 6;
 
+export const LEARN_BATCH_SIZE = 10;
+
 export function getCorrectCount(
   state: { correctCount: number } | null | undefined,
 ): number {
