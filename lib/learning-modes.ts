@@ -9,7 +9,6 @@ export type PickModeInput = {
   answer: string;
 };
 
-const SHORT_ANSWER_MAX_WORDS = 6;
 const MIN_MC_DISTRACTORS = 3;
 const MIN_WORD_BANK_TOKENS = 2;
 const WORD_BANK_DISTRACTOR_COUNT = 3;
@@ -33,10 +32,19 @@ export function tokenize(answer: string): string[] {
     .filter(Boolean);
 }
 
-function shuffle<T>(items: T[]): T[] {
+function createRng(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(1664525, state) + 1013904223) >>> 0;
+    return state / 0x1_0000_0000;
+  };
+}
+
+function shuffleSeeded<T>(items: T[], seed: number): T[] {
+  const random = createRng(seed);
   const result = [...items];
   for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [result[i], result[j]] = [result[j], result[i]];
   }
   return result;
@@ -59,17 +67,24 @@ export function canBuildChoices(answer: string, pool: string[]): boolean {
   return siblingAnswers(answer, pool).length >= MIN_MC_DISTRACTORS;
 }
 
-export function buildChoices(answer: string, pool: string[]): string[] {
-  const distractors = shuffle(siblingAnswers(answer, pool)).slice(
-    0,
-    CHOICE_COUNT - 1,
-  );
+export function buildChoices(
+  answer: string,
+  pool: string[],
+  seedKey: string,
+): string[] {
+  const distractors = shuffleSeeded(
+    siblingAnswers(answer, pool),
+    hashString(`${seedKey}:mc-distractors`),
+  ).slice(0, CHOICE_COUNT - 1);
 
   if (distractors.length < MIN_MC_DISTRACTORS) {
     throw new Error("Not enough distractors to build multiple-choice options");
   }
 
-  return shuffle([answer, ...distractors]);
+  return shuffleSeeded(
+    [answer, ...distractors],
+    hashString(`${seedKey}:mc-choices`),
+  );
 }
 
 export function canBuildTokenBank(answer: string, pool: string[]): boolean {
@@ -96,12 +111,16 @@ function collectDistractorTokens(answer: string, pool: string[]): string[] {
   return [...distractors];
 }
 
-export function buildTokenBank(answer: string, pool: string[]): string[] {
+export function buildTokenBank(
+  answer: string,
+  pool: string[],
+  seedKey: string,
+): string[] {
   const answerTokens = tokenize(answer);
-  const distractors = shuffle(collectDistractorTokens(answer, pool)).slice(
-    0,
-    WORD_BANK_DISTRACTOR_COUNT,
-  );
+  const distractors = shuffleSeeded(
+    collectDistractorTokens(answer, pool),
+    hashString(`${seedKey}:wb-distractors`),
+  ).slice(0, WORD_BANK_DISTRACTOR_COUNT);
 
   if (answerTokens.length < MIN_WORD_BANK_TOKENS) {
     throw new Error("Answer is too short to build a word bank");
@@ -111,7 +130,10 @@ export function buildTokenBank(answer: string, pool: string[]): string[] {
     throw new Error("Not enough distractor tokens to build a word bank");
   }
 
-  return shuffle([...answerTokens, ...distractors]);
+  return shuffleSeeded(
+    [...answerTokens, ...distractors],
+    hashString(`${seedKey}:wb-tokens`),
+  );
 }
 
 export function checkWordBank(selected: string[], answer: string): boolean {
@@ -121,17 +143,16 @@ export function checkWordBank(selected: string[], answer: string): boolean {
 function eligibleModes(card: PickModeInput, pool: string[]): LearningMode[] {
   const modes: LearningMode[] = ["classic"];
   const tokens = tokenize(card.answer);
-  const isShortAnswer = tokens.length <= SHORT_ANSWER_MAX_WORDS;
 
   if (canBuildChoices(card.answer, pool)) {
     modes.push("multipleChoice");
   }
 
-  if (isShortAnswer && tokens.length >= 1) {
+  if (tokens.length >= 1) {
     modes.push("typing");
   }
 
-  if (isShortAnswer && canBuildTokenBank(card.answer, pool)) {
+  if (canBuildTokenBank(card.answer, pool)) {
     modes.push("wordBank");
   }
 

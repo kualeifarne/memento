@@ -30,8 +30,8 @@ export function MultipleChoiceCard({
     if (!canBuildChoices(card.answer, pool)) {
       return null;
     }
-    return buildChoices(card.answer, pool);
-  }, [card.answer, pool]);
+    return buildChoices(card.answer, pool, card.id);
+  }, [card.answer, card.id, pool]);
 
   const [selected, setSelected] = useState<string | null>(null);
   const answered = selected !== null;

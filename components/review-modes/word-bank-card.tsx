@@ -35,11 +35,11 @@ export function WordBankCard({
     if (!canBuildTokenBank(card.answer, pool)) {
       return null;
     }
-    return buildTokenBank(card.answer, pool).map((token, id) => ({
+    return buildTokenBank(card.answer, pool, card.id).map((token, id) => ({
       id,
       token,
     }));
-  }, [card.answer, pool]);
+  }, [card.answer, card.id, pool]);
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [result, setResult] = useState<{ isCorrect: boolean } | null>(null);

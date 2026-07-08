@@ -36,8 +36,17 @@ model Card {
   order     Int      @default(0)
   deckId    String
   deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  learn     LearnState?
   review    ReviewState?
   reviewLogs ReviewLog[]
+}
+
+model LearnState {
+  id           String   @id @default(cuid())
+  cardId       String   @unique
+  card         Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  correctCount Int      @default(0)
+  updatedAt    DateTime @updatedAt
 }
 
 model ReviewState {
