@@ -17,9 +17,9 @@ export function getCorrectCount(
 
 function learnRatingDelta(rating: Rating): number {
   switch (rating) {
-    case "good":
-      return 1;
     case "easy":
+      return 1;
+    case "good":
       return 0;
     case "again":
     case "hard":
