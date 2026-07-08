@@ -56,7 +56,7 @@ export function MultipleChoiceCard({
   }
 
   function handleContinue() {
-    onGrade(isCorrect ? "good" : "again");
+    onGrade(isCorrect ? "easy" : "again");
   }
 
   return (

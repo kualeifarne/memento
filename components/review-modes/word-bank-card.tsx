@@ -86,7 +86,7 @@ export function WordBankCard({
 
   function handleContinue() {
     if (!result) return;
-    onGrade(result.isCorrect ? "good" : "again");
+    onGrade(result.isCorrect ? "easy" : "again");
   }
 
   return (
