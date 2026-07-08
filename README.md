@@ -6,8 +6,6 @@ A local flashcard app for creating courses, learning new cards, and reviewing th
 
 - [Bun](https://bun.sh/) (latest version recommended)
 
-On Windows, `better-sqlite3` may require [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) if prebuilt binaries are not available for your environment.
-
 ## Local setup
 
 1. **Clone the repository**
@@ -114,7 +112,7 @@ All progress (learn state, review schedules, and review history) is saved to the
 ## Tech stack
 
 - [Next.js](https://nextjs.org/) (App Router)
-- [Prisma](https://www.prisma.io/) with SQLite (`better-sqlite3`)
+- [Prisma](https://www.prisma.io/) with SQLite (`@prisma/adapter-libsql`)
 - [React](https://react.dev/) and [Tailwind CSS](https://tailwindcss.com/)
 - [Bun](https://bun.sh/) for package management and scripts
 
