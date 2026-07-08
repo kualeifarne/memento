@@ -1,15 +1,17 @@
 import Link from "next/link";
 
+import { ReviewSession } from "@/components/review-session";
 import { buttonVariants } from "@/components/ui/button";
+import { LEARN_TARGET } from "@/lib/learn-progress";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
-import { ReviewSession } from "@/components/review-session";
 
 export default async function ReviewPage() {
   const now = new Date();
 
   const cards = await prisma.card.findMany({
     where: {
+      learn: { correctCount: { gte: LEARN_TARGET } },
       OR: [{ review: null }, { review: { nextReviewAt: { lte: now } } }],
     },
     select: {
